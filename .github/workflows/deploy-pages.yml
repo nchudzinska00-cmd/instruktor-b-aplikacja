@@ -1,0 +1,38 @@
+name: Publikacja aplikacji
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+      - name: Przygotuj GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Rozpakuj aplikację
+        run: |
+          mkdir -p _site
+          unzip -q site.zip -d _site
+      - name: Prześlij stronę
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+      - name: Opublikuj stronę
+        id: deployment
+        uses: actions/deploy-pages@v4
